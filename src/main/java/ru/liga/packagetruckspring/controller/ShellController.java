@@ -71,7 +71,7 @@ public class ShellController {
 	}
 
 	@ShellMethod("pack-truck")
-	public void pack(@ShellOption String mode, @ShellOption("--listName") String listName, @ShellOption("--size") String size, @ShellOption String result) {
+	public void packTruck(@ShellOption String mode, @ShellOption("--listName") String listName, @ShellOption("--size") String size, @ShellOption String result) {
 		List<Truck> trucks;
 		List<String> packages;
 		truckService.createTruck(size);
