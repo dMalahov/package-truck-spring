@@ -18,10 +18,6 @@
 
 3. Убедитесь, что у вас установлены зависимости, указанные в `pom.xml` (если используете Maven).
 
-### Основные директории
-
-- **[resources](src%2Fmain%2Fresources)**: Содержит файлы с информацией о посылках и берет от туда новый файл для загрузки
-
 ### Результаты выполнения
 
 - Выводит результат в косоль
@@ -69,12 +65,12 @@ list-packages
 
 **Использование**:
 ```shell
-reload-packages --fileName <имя_файла>
+reload-packages --filePath <имя_файла>
 ```
 
 **Пример**:
 ```shell
-reload-packages --fileName data.json
+reload-packages --filePath C:/Git/JavaLessons/testsProject/package-truck-spring/src/main/resources/data.json
 ```
 
 #### print-package

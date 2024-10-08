@@ -7,10 +7,7 @@ import org.springframework.shell.standard.ShellOption;
 import ru.liga.packagetruckspring.model.Package;
 import ru.liga.packagetruckspring.model.Structure;
 import ru.liga.packagetruckspring.model.Truck;
-import ru.liga.packagetruckspring.service.FileService;
-import ru.liga.packagetruckspring.service.PackageService;
-import ru.liga.packagetruckspring.service.StructureService;
-import ru.liga.packagetruckspring.service.TruckService;
+import ru.liga.packagetruckspring.service.*;
 
 import java.util.List;
 import java.util.Locale;
@@ -28,21 +25,22 @@ public class ShellController {
 	private final PackageService packageService;
 	private final TruckService truckService;
 	private final FileService fileService;
+	private final PrintService printService;
 
 	@ShellMethod("list-packages")
 	public void listPackages() {
-		structureService.printList();
+		printService.printStructureList();
 	}
 
 	@ShellMethod("reload-packages")
-	public void reloadPackages(@ShellOption String fileName) {
-		List<Structure> structure = fileService.readFileData(fileName);
+	public void reloadPackages(@ShellOption String filePath) {
+		List<Structure> structure = fileService.readFileData(filePath);
 		structureService.reloadStructures(structure);
 	}
 
 	@ShellMethod("print-package")
 	public void printPackage(@ShellOption String name) {
-		structureService.printByName(name);
+		printService.printStructureByName(name);
 	}
 
 	@ShellMethod("add-package")
@@ -92,7 +90,7 @@ public class ShellController {
 		if(result.toUpperCase(Locale.ROOT).contains("JSON")) {
 			fileService.writeResultJson(truckService.createJsonForTruck(trucks));
 		} else {
-			truckService.printTruckInConsole(trucks);
+			printService.printTrucks(trucks);
 		}
 	}
 

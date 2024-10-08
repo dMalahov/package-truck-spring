@@ -12,7 +12,7 @@ import java.util.List;
 @Repository
 public class TruckRepository {
 
-    private List<Truck> trucks = new ArrayList<>();
+    private final List<Truck> trucks = new ArrayList<>();
 
     /**
      * Возвращает список всех грузовиков.
@@ -20,16 +20,18 @@ public class TruckRepository {
      * @return список всех грузовиков.
      */
     public List<Truck> findAll() {
-        return trucks;
+        return new ArrayList<>(trucks);
     }
 
     /**
      * Сохраняет указанный грузовик в репозиторий.
      *
      * @param truck грузовик для сохранения.
+     * @return сохранённый грузовик.
      */
-    public void save(Truck truck) {
+    public Truck save(Truck truck) {
         trucks.add(truck);
+        return truck;
     }
 
     /**

@@ -1,5 +1,6 @@
 package ru.liga.packagetruckspring.service;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -7,7 +8,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.liga.packagetruckspring.model.Truck;
 import ru.liga.packagetruckspring.model.Package;
@@ -18,29 +18,33 @@ import ru.liga.packagetruckspring.repository.PackageRepository;
  */
 @Slf4j
 @Service
+@AllArgsConstructor
 public class PackageService {
 
-	@Autowired
 	private PackageRepository packageRepository;
 
 	/**
 	 * Сортирует простые заказы из массива необработанных строк посылок.
 	 *
-	 * @param unassembledPackagesList список строк, где каждая строка представляет
-	 *                               необработанную посылку.
+	 * @param unassembledPackagesList список строк, где каждая строка представляет необработанную посылку.
 	 * @return список готовых посылок, отсортированных по ширине нижней части.
 	 */
 	public List<Package> sortSimpleOrders(List<String> unassembledPackagesList) {
 		packageRepository.clear();
 		log.info("Сортировка посылок простая");
-		for (String unassembledPackages : unassembledPackagesList) {
-			log.debug("Добавление посылки "+unassembledPackages);
-			String[] unassembledPackage = unassembledPackages.split(":");
-			int h = unassembledPackage.length;
-			int wTop = unassembledPackage[0].length();
-			int wBotton = unassembledPackage[h-1].length();
-			packageRepository.save(new Package(h,wTop,wBotton,unassembledPackage));
+
+		for (String unassembledPackage : unassembledPackagesList) {
+			log.debug("Добавление посылки {}", unassembledPackage);
+			String[] packageComponents = unassembledPackage.split(":");
+			int firstComponentIndex = 0;
+			int lastComponentIndex = packageComponents.length - 1;
+			int height = packageComponents.length;
+			int widthTop = packageComponents[firstComponentIndex].length();
+			int widthBottom = packageComponents[lastComponentIndex].length();
+
+			packageRepository.save(new Package(height, widthTop, widthBottom, packageComponents));
 		}
+
 		return sortRevertReadyPackage(packageRepository.findAll());
 	}
 
@@ -53,24 +57,35 @@ public class PackageService {
 	public List<Package> sortComplexOrders(List<Truck> listTrucks) {
 		packageRepository.clear();
 		log.info("Сортировка посылок комлексная");
-		for (Truck truck : listTrucks) {
-			if(truck.getPackages().size()>1) {
-				log.debug("Складывание посылок "+truck.getPackages().get(0)+" и "+truck.getPackages().get(1));
-				packageRepository.save(new Package(
-						Math.max(truck.getPackages().get(0).getHeight(), truck.getPackages().get(1).getHeight()),
-						Math.max(truck.getPackages().get(0).getWidthTop(), truck.getPackages().get(1).getWidthTop()),
-						truck.getPackages().get(0).getWidthBottom() + truck.getPackages().get(1).getWidthBottom(),
-						mergePackages(truck.getPackages().get(0), truck.getPackages().get(1))));
-			} else {
-				log.debug("Складывание посылки "+ Arrays.toString(truck.getPackages().get(0).getPack()));
-				packageRepository.save(new Package(
-						truck.getPackages().get(0).getHeight(),
-						truck.getPackages().get(0).getWidthTop(),
-						truck.getPackages().get(0).getWidthBottom(),
-						truck.getPackages().get(0).getPack()));
+
+		listTrucks.forEach(truck -> {
+			if (!truck.getPackages().isEmpty() && truck.getPackages().size() > 1) {
+				log.debug("Складывание посылок {} и {}", truck.getPackages().get(0), truck.getPackages().get(1));
+				Package mergedPackage = mergeTwoPackages(truck.getPackages().get(0), truck.getPackages().get(1));
+				packageRepository.save(mergedPackage);
+			} else if (!truck.getPackages().isEmpty()) {
+				log.debug("Складывание посылки {}", Arrays.toString(truck.getPackages().get(0).getPack()));
+				packageRepository.save(truck.getPackages().get(0));
 			}
-		}
+		});
+
 		return sortRevertReadyPackage(packageRepository.findAll());
+	}
+
+	/**
+	 * Объединяет две посылки в одну.
+	 *
+	 * @param package1 первая посылка.
+	 * @param package2 вторая посылка.
+	 * @return объедененная посылка.
+	 */
+	private Package mergeTwoPackages(Package package1, Package package2) {
+		int height = Math.max(package1.getHeight(), package2.getHeight());
+		int widthTop = Math.max(package1.getWidthTop(), package2.getWidthTop());
+		int widthBottom = package1.getWidthBottom() + package2.getWidthBottom();
+		String[] mergedPack = mergePackages(package1, package2);
+
+		return new Package(height, widthTop, widthBottom, mergedPack);
 	}
 
 	/**

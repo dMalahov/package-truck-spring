@@ -17,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 public class TruckPackageJson {
 
-	List<Truck> trucks;
+	private List<Truck> trucks;
 
 	/**
 	 * Вложенный класс, описывающий массив посылок.
@@ -28,7 +28,7 @@ public class TruckPackageJson {
 	@AllArgsConstructor
 	public static class Truck {
 		@JsonProperty("packages")
-		List<Order> orders;
+		private List<Order> orders;
 	}
 
 	/**
@@ -40,7 +40,7 @@ public class TruckPackageJson {
 	@AllArgsConstructor
 	public static class Order {
 		@JsonProperty("package")
-		String order;
+		private String order;
 	}
 
 }

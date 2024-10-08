@@ -13,7 +13,7 @@ import java.util.Optional;
 @Repository
 public class StructureRepository {
 
-    private List<Structure> structures = new ArrayList<>();
+    private final List<Structure> structures = new ArrayList<>();
 
     /**
      * Возвращает список всех структур.
@@ -21,7 +21,7 @@ public class StructureRepository {
      * @return список всех структур.
      */
     public List<Structure> findAll() {
-        return structures;
+        return new ArrayList<>(structures);
     }
 
     /**
@@ -41,12 +41,14 @@ public class StructureRepository {
      *
      * @param name имя структуры для обновления.
      * @param updatedStructure обновлённые данные для структуры.
+     * @return обновлённая структура, или пустой Optional, если структура не найдена.
      */
-    public void update(String name, Structure updatedStructure) {
-        findByName(name).ifPresent(originalStructure -> {
+    public Optional<Structure> update(String name, Structure updatedStructure) {
+        return findByName(name).map(originalStructure -> {
             originalStructure.setName(updatedStructure.getName());
             originalStructure.setForm(updatedStructure.getForm());
             originalStructure.setSymbol(updatedStructure.getSymbol());
+            return originalStructure;
         });
     }
 
@@ -54,18 +56,22 @@ public class StructureRepository {
      * Сохраняет указанную структуру в репозиторий.
      *
      * @param structure структура для сохранения.
+     * @return сохранённая структура.
      */
-    public void save(Structure structure) {
+    public Structure save(Structure structure) {
         structures.add(structure);
+        return structure;
     }
 
     /**
      * Сохраняет список структур в репозиторий.
      *
      * @param structures список структур для сохранения.
+     * @return сохраненный список структур.
      */
-    public void saveAll(List<Structure> structures) {
-        this.structures = structures;
+    public List<Structure> saveAll(List<Structure> structures) {
+        this.structures.addAll(structures);
+        return new ArrayList<>(this.structures);
     }
 
     /**

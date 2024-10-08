@@ -14,13 +14,15 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
 import ru.liga.packagetruckspring.model.Truck;
 import ru.liga.packagetruckspring.model.Package;
 import ru.liga.packagetruckspring.repository.TruckRepository;
 import ru.liga.packagetruckspring.service.TruckService;
 
+@SpringBootTest(properties = "spring.shell.interactive.enabled=false")
 @ExtendWith(MockitoExtension.class)
-public class TruckServiceTest {
+class TruckServiceTest {
 
     @Mock
     private TruckRepository truckRepository;

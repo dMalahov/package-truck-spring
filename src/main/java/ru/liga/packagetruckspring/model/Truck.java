@@ -1,6 +1,7 @@
 package ru.liga.packagetruckspring.model;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,21 +10,11 @@ import java.util.List;
  * Класс, представляющий грузовик, который содержит список пакетов.
  */
 @Getter
+@RequiredArgsConstructor
 public class Truck {
 
-	protected List<Package> packages = new ArrayList<>();
-	protected int height;
-	protected int width;
-
-	/**
-	 * Конструктор для создания грузовика.
-	 *
-	 * @param height высота.
-	 * @param width ширина.
-	 */
-	public Truck(int height, int width) {
-		this.height = height;
-		this.width = width;
-	}
+	private List<Package> packages = new ArrayList<>();
+	private final int height;
+	private final int width;
 
 }

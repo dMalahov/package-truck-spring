@@ -48,12 +48,12 @@ list-packages
 
 **Использование**:
 ```shell
-reload-packages --fileName <имя_файла>
+reload-packages --filePath <имя_файла>
 ```
 
 **Пример**:
 ```shell
-reload-packages --fileName data.json
+reload-packages --filePath C:/Git/JavaLessons/testsProject/package-truck-spring/src/main/resources/data.json
 ```
 
 ## print-package

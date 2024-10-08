@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public class PackageRepository {
 
-    private List<Package> packages = new ArrayList<>();
+    private final List<Package> packages = new ArrayList<>();
 
     /**
      * Возвращает список всех пакетов.
@@ -19,16 +19,18 @@ public class PackageRepository {
      * @return список всех пакетов.
      */
     public List<Package> findAll() {
-        return packages;
+        return new ArrayList<>(packages);
     }
 
     /**
      * Сохраняет указанный пакет в репозиторий.
      *
      * @param pack пакет для сохранения.
+     * @return сохранённый пакет.
      */
-    public void save(Package pack) {
+    public Package save(Package pack) {
         packages.add(pack);
+        return pack;
     }
 
     /**
