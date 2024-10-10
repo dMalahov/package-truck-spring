@@ -9,8 +9,8 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
-import ru.liga.packagetruckspring.model.Truck;
-import ru.liga.packagetruckspring.model.Package;
+import ru.liga.packagetruckspring.dto.PackageDto;
+import ru.liga.packagetruckspring.dto.TruckDto;
 import ru.liga.packagetruckspring.repository.PackageRepository;
 
 /**
@@ -29,7 +29,7 @@ public class PackageService {
 	 * @param unassembledPackagesList список строк, где каждая строка представляет необработанную посылку.
 	 * @return список готовых посылок, отсортированных по ширине нижней части.
 	 */
-	public List<Package> sortSimpleOrders(List<String> unassembledPackagesList) {
+	public List<PackageDto> sortSimpleOrders(List<String> unassembledPackagesList) {
 		packageRepository.clear();
 		log.info("Сортировка посылок простая");
 
@@ -42,7 +42,7 @@ public class PackageService {
 			int widthTop = packageComponents[firstComponentIndex].length();
 			int widthBottom = packageComponents[lastComponentIndex].length();
 
-			packageRepository.save(new Package(height, widthTop, widthBottom, packageComponents));
+			packageRepository.save(height, widthTop, widthBottom, packageComponents);
 		}
 
 		return sortRevertReadyPackage(packageRepository.findAll());
@@ -54,15 +54,14 @@ public class PackageService {
 	 * @param listTrucks список грузовиков, содержащих посылки.
 	 * @return список готовых посылок, отсортированных по ширине нижней части.
 	 */
-	public List<Package> sortComplexOrders(List<Truck> listTrucks) {
+	public List<PackageDto> sortComplexOrders(List<TruckDto> listTrucks) {
 		packageRepository.clear();
 		log.info("Сортировка посылок комлексная");
 
 		listTrucks.forEach(truck -> {
 			if (!truck.getPackages().isEmpty() && truck.getPackages().size() > 1) {
 				log.debug("Складывание посылок {} и {}", truck.getPackages().get(0), truck.getPackages().get(1));
-				Package mergedPackage = mergeTwoPackages(truck.getPackages().get(0), truck.getPackages().get(1));
-				packageRepository.save(mergedPackage);
+				mergeTwoPackages(truck.getPackages().get(0), truck.getPackages().get(1));
 			} else if (!truck.getPackages().isEmpty()) {
 				log.debug("Складывание посылки {}", Arrays.toString(truck.getPackages().get(0).getPack()));
 				packageRepository.save(truck.getPackages().get(0));
@@ -79,13 +78,13 @@ public class PackageService {
 	 * @param package2 вторая посылка.
 	 * @return объедененная посылка.
 	 */
-	private Package mergeTwoPackages(Package package1, Package package2) {
+	private PackageDto mergeTwoPackages(PackageDto package1, PackageDto package2) {
 		int height = Math.max(package1.getHeight(), package2.getHeight());
 		int widthTop = Math.max(package1.getWidthTop(), package2.getWidthTop());
 		int widthBottom = package1.getWidthBottom() + package2.getWidthBottom();
 		String[] mergedPack = mergePackages(package1, package2);
 
-		return new Package(height, widthTop, widthBottom, mergedPack);
+		return packageRepository.save(height, widthTop, widthBottom, mergedPack);
 	}
 
 	/**
@@ -95,7 +94,7 @@ public class PackageService {
 	 * @param pkg2 вторая посылка для объединения.
 	 * @return массив строк, представляющий объединённую посылку.
 	 */
-	private String[] mergePackages(Package pkg1, Package pkg2) {
+	private String[] mergePackages(PackageDto pkg1, PackageDto pkg2) {
 		// Получаем пакеты из обоих объектов Package
 		String[] pack1 = pkg1.getPack();
 		String[] pack2 = pkg2.getPack();
@@ -131,8 +130,8 @@ public class PackageService {
 	 * @param readyPackages список посылок для сортировки.
 	 * @return отсортированный список посылок.
 	 */
-	private List<Package> sortRevertReadyPackage(List<Package> readyPackages) {
-		readyPackages.sort(Comparator.comparingInt(Package::getWidthBottom));
+	private List<PackageDto> sortRevertReadyPackage(List<PackageDto> readyPackages) {
+		readyPackages.sort(Comparator.comparingInt(PackageDto::getWidthBottom));
 		return readyPackages;
 	}
 

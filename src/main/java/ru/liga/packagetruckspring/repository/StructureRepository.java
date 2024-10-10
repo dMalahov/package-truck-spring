@@ -1,9 +1,11 @@
 package ru.liga.packagetruckspring.repository;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import ru.liga.packagetruckspring.model.Structure;
+import ru.liga.packagetruckspring.dto.StructureDto;
+import ru.liga.packagetruckspring.mapper.StructureRowMapper;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,17 +13,19 @@ import java.util.Optional;
  * Репозиторий для управления структурой пакетов из json.
  */
 @Repository
+@RequiredArgsConstructor
 public class StructureRepository {
 
-    private final List<Structure> structures = new ArrayList<>();
+    private final JdbcTemplate jdbcTemplate;
 
     /**
      * Возвращает список всех структур.
      *
      * @return список всех структур.
      */
-    public List<Structure> findAll() {
-        return new ArrayList<>(structures);
+    public List<StructureDto> findAll() {
+        String sql = "SELECT * FROM postgres.stucture";
+        return jdbcTemplate.query(sql, new StructureRowMapper());
     }
 
     /**
@@ -30,9 +34,10 @@ public class StructureRepository {
      * @param name имя структуры.
      * @return Optional, содержащий найденную структуру, или пустой Optional, если структура не найдена.
      */
-    public Optional<Structure> findByName(String name) {
-        return structures.stream()
-                .filter(structure -> structure.getName().equalsIgnoreCase(name))
+    public Optional<StructureDto> findByName(String name) {
+        String sql = "SELECT * FROM postgres.stucture WHERE name = ?";
+        return jdbcTemplate.query(sql, new Object[]{name}, new StructureRowMapper())
+                .stream()
                 .findFirst();
     }
 
@@ -43,13 +48,15 @@ public class StructureRepository {
      * @param updatedStructure обновлённые данные для структуры.
      * @return обновлённая структура, или пустой Optional, если структура не найдена.
      */
-    public Optional<Structure> update(String name, Structure updatedStructure) {
-        return findByName(name).map(originalStructure -> {
-            originalStructure.setName(updatedStructure.getName());
-            originalStructure.setForm(updatedStructure.getForm());
-            originalStructure.setSymbol(updatedStructure.getSymbol());
-            return originalStructure;
-        });
+    public Optional<StructureDto> update(String name, StructureDto updatedStructure) {
+        String sqlUpdate = "UPDATE postgres.stucture SET name = ?, form = ?, symbol = ? WHERE name = ?";
+        int updated = jdbcTemplate.update(sqlUpdate, updatedStructure.getName(), updatedStructure.getForm(), updatedStructure.getSymbol(), name);
+
+        if (updated > 0) {
+            return findByName(updatedStructure.getName());
+        } else {
+            return Optional.empty();
+        }
     }
 
     /**
@@ -58,9 +65,11 @@ public class StructureRepository {
      * @param structure структура для сохранения.
      * @return сохранённая структура.
      */
-    public Structure save(Structure structure) {
-        structures.add(structure);
-        return structure;
+    public StructureDto save(StructureDto structurePack) {
+        String sqlInsert = "INSERT INTO postgres.stucture (name, form, symbol) VALUES (?, ?, ?)";
+        jdbcTemplate.update(sqlInsert, structurePack.getName(), structurePack.getForm(), structurePack.getSymbol());
+
+        return findByName(structurePack.getName()).orElse(null);
     }
 
     /**
@@ -69,16 +78,16 @@ public class StructureRepository {
      * @param structures список структур для сохранения.
      * @return сохраненный список структур.
      */
-    public List<Structure> saveAll(List<Structure> structures) {
-        this.structures.addAll(structures);
-        return new ArrayList<>(this.structures);
+    public List<StructureDto> saveAll(List<StructureDto> structures) {
+        structures.forEach(this::save);
+        return findAll();
     }
 
     /**
      * Очищает все структуры из репозитория.
      */
     public void clear() {
-        this.structures.clear();
+        String sqlDelete = "DELETE FROM postgres.stucture";
+        jdbcTemplate.update(sqlDelete);
     }
-
 }

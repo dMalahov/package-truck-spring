@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import ru.liga.packagetruckspring.dto.StructureDto;
 import ru.liga.packagetruckspring.exception.CustomException;
 import ru.liga.packagetruckspring.model.Structure;
 import ru.liga.packagetruckspring.service.FileService;
@@ -27,11 +28,11 @@ class FileServiceTest {
 
     @Test
     void testReadFileJson() {
-        List<Structure> list = fileService.readFileData(testFile);
+        List<StructureDto> list = fileService.readFileData(testFile);
         String name = "";
         String form = "";
         String symbol = "";
-        for (Structure structure : list) {
+        for (StructureDto structure : list) {
             name = structure.getName();
             form = structure.getForm();
             symbol = structure.getSymbol();

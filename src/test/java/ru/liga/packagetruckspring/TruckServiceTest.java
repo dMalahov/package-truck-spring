@@ -15,8 +15,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
+import ru.liga.packagetruckspring.dto.PackageDto;
+import ru.liga.packagetruckspring.dto.TruckDto;
 import ru.liga.packagetruckspring.model.Truck;
-import ru.liga.packagetruckspring.model.Package;
 import ru.liga.packagetruckspring.repository.TruckRepository;
 import ru.liga.packagetruckspring.service.TruckService;
 
@@ -32,8 +33,13 @@ class TruckServiceTest {
 
     @BeforeEach
     public void setup() {
-        List<Truck> truckList = new ArrayList<>();
-        truckList.add(new Truck(10, 5));
+        List<TruckDto> truckList = new ArrayList<>();
+        TruckDto truck1 = new TruckDto();
+        truck1.setHeight(5);
+        truck1.setWidth(5);
+        truck1.setPackages(new ArrayList<>());
+        PackageDto package1 = new PackageDto(1L, 3, 3, 3, new String[]{"999", "999", "999"});
+        truck1.getPackages().add(package1);
         lenient().when(truckRepository.findAll()).thenReturn(truckList);
     }
 
@@ -41,10 +47,10 @@ class TruckServiceTest {
     public void testCreateTruck() {
         String params = "10x5,15x10";
         truckService.createTruck(params);
-        ArgumentCaptor<Truck> truckCaptor = ArgumentCaptor.forClass(Truck.class);
+        ArgumentCaptor<TruckDto> truckCaptor = ArgumentCaptor.forClass(TruckDto.class);
         verify(truckRepository).clear();
         verify(truckRepository, times(2)).save(truckCaptor.capture());
-        List<Truck> capturedTrucks = truckCaptor.getAllValues();
+        List<TruckDto> capturedTrucks = truckCaptor.getAllValues();
         assertEquals(2, capturedTrucks.size());
         assertEquals(10, capturedTrucks.get(0).getHeight());
         assertEquals(5, capturedTrucks.get(0).getWidth());
@@ -54,30 +60,30 @@ class TruckServiceTest {
 
     @Test
     public void testCreateSimplePack() {
-        List<Package> readyPackages = Arrays.asList(
-                new Package(2,2,5,new String[]{"999","999","999"}),
-                new Package(5, 2,7,new String[]{"999","999","999"}));
-        List<Truck> trucks = truckService.createSimplePack(readyPackages);
+        List<PackageDto> readyPackages = Arrays.asList(
+                new PackageDto(1L, 2, 2, 5, new String[]{"999", "999", "999"}),
+                new PackageDto(2L, 5, 2, 7, new String[]{"999", "999", "999"}));
+        List<TruckDto> trucks = truckService.createSimplePack(readyPackages);
         assertEquals(1, trucks.get(0).getPackages().size());
         verify(truckRepository, times(2)).findAll();
     }
 
     @Test
     public void testCreateComplexPackForWidth() {
-        List<Package> readyPackages = Arrays.asList(
-                new Package(2,2,5,new String[]{"999","999","999"}),
-                new Package(5, 2,7,new String[]{"999","999","999"}));
-        List<Truck> trucks = truckService.createComplexPackForWidth(readyPackages);
+        List<PackageDto> readyPackages = Arrays.asList(
+                new PackageDto(1L, 2, 2, 5, new String[]{"999", "999", "999"}),
+                new PackageDto(2L, 5, 2, 7, new String[]{"999", "999", "999"}));
+        List<TruckDto> trucks = truckService.createComplexPackForWidth(readyPackages);
         assertFalse(trucks.get(0).getPackages().isEmpty());
         verify(truckRepository).findAll();
     }
 
     @Test
     public void testCreateComplexPackFoHeight() {
-        List<Package> readyPackages = Arrays.asList(
-                new Package(2,2,5,new String[]{"999","999","999"}),
-                new Package(5, 2,7,new String[]{"999","999","999"}));
-        List<Truck> trucks = truckService.createComplexPackFoHeight(readyPackages);
+        List<PackageDto> readyPackages = Arrays.asList(
+                new PackageDto(1L, 2, 2, 5, new String[]{"999", "999", "999"}),
+                new PackageDto(2L, 5, 2, 7, new String[]{"999", "999", "999"}));
+        List<TruckDto> trucks = truckService.createComplexPackFoHeight(readyPackages);
         assertEquals(2, trucks.get(0).getPackages().size());
         verify(truckRepository).findAll();
     }

@@ -6,8 +6,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import ru.liga.packagetruckspring.dto.StructureDto;
 import ru.liga.packagetruckspring.exception.CustomException;
-import ru.liga.packagetruckspring.model.Structure;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -28,12 +28,31 @@ public class FileService {
 	/**
 	 * Читает текстовый файл и возвращает его содержимое в виде массива строк.
 	 *
+	 * @param file файл.
+	 * @return список строк, содержащих содержимое посылок.
+	 */
+	public List<StructureDto> readFileData(File file) {
+		log.info("Чтение файла");
+		List<StructureDto> structures;
+		try {
+			structures = objectMapper.readValue(file, new TypeReference<>() {
+			});
+		} catch (IOException e) {
+			log.error("Ошибка чтения файла", e);
+			throw new CustomException("Ошибка чтения файла", e);
+		}
+		return structures;
+	}
+
+	/**
+	 * Читает текстовый файл и возвращает его содержимое в виде массива строк.
+	 *
 	 * @param filePath путь до файла.
 	 * @return список строк, содержащих содержимое посылок.
 	 */
-	public List<Structure> readFileData(String filePath) {
+	public List<StructureDto> readFileData(String filePath) {
 		log.info("Чтение файла {}", filePath);
-		List<Structure> structures;
+		List<StructureDto> structures;
 		try {
 			structures = objectMapper.readValue(new File(filePath), new TypeReference<>() {
 			});
