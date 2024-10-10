@@ -2,7 +2,7 @@ package ru.liga.packagetruckspring.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.liga.packagetruckspring.model.Structure;
+import ru.liga.packagetruckspring.dto.StructureDto;
 import ru.liga.packagetruckspring.repository.StructureRepository;
 
 import java.util.ArrayList;
@@ -19,6 +19,54 @@ import java.util.stream.Collectors;
 public class StructureService {
 
     private StructureRepository structureRepository;
+
+    /**
+     * Возвращает список всех доступных форм пакетов.
+     *
+     * @return Список всех структур.
+     */
+    public List<StructureDto> getAllStructures() {
+        return structureRepository.findAll();
+    }
+
+    /**
+     * Возвращает список всех доступных форм пакетов.
+     * * @return Список всех структур в формате строке
+     */
+    public String getAllStructuresString() {
+        StringBuilder sb = new StringBuilder();
+        structureRepository.findAll().forEach(s ->
+                sb.append("Name: ").append(s.getName()).append("\n")
+                        .append("From:\n").append(s.getForm().replace(":", "\n")).append("\n")
+                        .append("Symbol: ").append(s.getSymbol()).append("\n\n"));
+        return String.valueOf(sb);
+    }
+
+    /**
+     * Возвращает пакет по наименованию.
+     *
+     * @return структура пакета.
+     */
+    public StructureDto getStructureByName(String name) {
+        return structureRepository.findByName(name).get();
+    }
+
+    /**
+     * Возвращает пакет по наименованию.
+     *
+     * @return структура пакета в формате строке
+     */
+    public String getStructureByNameString(String name) {
+        StringBuilder sb = new StringBuilder();
+        Optional<StructureDto> structureOpt = structureRepository.findByName(name);
+        if (structureOpt.isPresent()) {
+            StructureDto s = structureOpt.get();
+            sb.append("Name: ").append(s.getName()).append("\n")
+                    .append("From:\n").append(s.getForm().replace(":", "\n")).append("\n")
+                    .append("Symbol: ").append(s.getSymbol()).append("\n\n");
+        }
+        return String.valueOf(sb);
+    }
 
     /**
      * Возвращает список всех доступных форм пакетов.
@@ -43,7 +91,7 @@ public class StructureService {
                 .map(structureRepository::findByName)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .map(Structure::getForm)
+                .map(StructureDto::getForm)
                 .collect(Collectors.toList());
     }
 
@@ -51,10 +99,11 @@ public class StructureService {
      * Перезагружает структуры пакетов новыми данными.
      *
      * @param structures Список структур для загрузки.
+     * @return Список сохраненных структур
      */
-    public void reloadStructures(List<Structure> structures) {
+    public List<StructureDto> reloadStructures(List<StructureDto> structures) {
         structureRepository.clear();
-        structureRepository.saveAll(structures);
+        return structureRepository.saveAll(structures);
     }
 
     /**
@@ -64,11 +113,21 @@ public class StructureService {
      * @param form Форма новой структуры.
      */
     public void addNewStructure(String name, String form) {
-        Structure structure = new Structure();
+        StructureDto structure = new StructureDto();
         structure.setName(name);
         structure.setForm(form);
         structure.setSymbol(getFirstCharacter(form));
         structureRepository.save(structure);
+    }
+
+    /**
+     * Обновляет существующую структуру пакета новыми именем и формой.
+     *
+     * @param oldName Текущее имя структуры.
+     * @param structure Новая структура.
+     */
+    public StructureDto updateStructure(String oldName, StructureDto structure) {
+        return structureRepository.update(oldName, structure).get();
     }
 
     /**

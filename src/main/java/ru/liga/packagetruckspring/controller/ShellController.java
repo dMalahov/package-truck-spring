@@ -4,9 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
-import ru.liga.packagetruckspring.model.Package;
-import ru.liga.packagetruckspring.model.Structure;
-import ru.liga.packagetruckspring.model.Truck;
+import ru.liga.packagetruckspring.dto.StructureDto;
+import ru.liga.packagetruckspring.service.PackService;
 import ru.liga.packagetruckspring.service.*;
 
 import java.util.List;
@@ -22,25 +21,23 @@ import java.util.Locale;
 public class ShellController {
 
 	private final StructureService structureService;
-	private final PackageService packageService;
-	private final TruckService truckService;
 	private final FileService fileService;
-	private final PrintService printService;
+	private final PackService packService;
 
 	@ShellMethod("list-packages")
 	public void listPackages() {
-		printService.printStructureList();
+		System.out.println(structureService.getAllStructuresString());
 	}
 
 	@ShellMethod("reload-packages")
 	public void reloadPackages(@ShellOption String filePath) {
-		List<Structure> structure = fileService.readFileData(filePath);
+		List<StructureDto> structure = fileService.readFileData(filePath);
 		structureService.reloadStructures(structure);
 	}
 
 	@ShellMethod("print-package")
 	public void printPackage(@ShellOption String name) {
-		printService.printStructureByName(name);
+		System.out.println(structureService.getStructureByNameString(name));
 	}
 
 	@ShellMethod("add-package")
@@ -70,27 +67,12 @@ public class ShellController {
 
 	@ShellMethod("pack-truck")
 	public void packTruck(@ShellOption String mode, @ShellOption("--listName") String listName, @ShellOption("--size") String size, @ShellOption String result) {
-		List<Truck> trucks;
-		List<String> packages;
-		truckService.createTruck(size);
-		if(listName.isEmpty()) {
-			packages = structureService.getAllForms();
-		} else {
-			packages = structureService.getFormsForName(listName);
-		}
-		List<Package> sortPackages = packageService.sortSimpleOrders(packages);
-		if(mode.toUpperCase(Locale.ROOT).contains("S")) {
-			trucks = truckService.createSimplePack(sortPackages);
-		} else {
-			List<Truck> trucksForWidth = truckService.createComplexPackForWidth(sortPackages);
-			List<Package> sortPackagesComplex = packageService.sortComplexOrders(trucksForWidth);
-			truckService.createTruck(size);
-			trucks = truckService.createComplexPackFoHeight(sortPackagesComplex);
-		}
+		String finalTruck = packService.packTruck(mode, listName, size, result);
 		if(result.toUpperCase(Locale.ROOT).contains("JSON")) {
-			fileService.writeResultJson(truckService.createJsonForTruck(trucks));
+			fileService.writeResultJson(finalTruck);
 		} else {
-			printService.printTrucks(trucks);
+			System.out.println(finalTruck);
+			;
 		}
 	}
 

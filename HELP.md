@@ -161,5 +161,5 @@ pack-truck --mode s --listName "Девятка,Восьмерка" --size "4x4,5
 ```
 **Пример**:
 ```shell
-pack-truck --mode c --listName "" --size "6x6,6x6,6x6,6x6,6x6" --result console
+pack-truck --mode c --listName "" --size "6x6,7x7,8x8,6x6,6x6,6x6,6x6" --result console
 ```
